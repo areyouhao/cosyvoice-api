@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS API Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, select, textarea, button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .audio-container {
+            margin-top: 20px;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .api-section {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none;
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CosyVoice2 API Demo</h1>
+
+
+        <!-- Section for TTS API -->
+        <div class="api-section">
+            <h2>Text-to-Speech (TTS)</h2>
+            <form id="ttsForm" data-api="tts" data-loader="ttsLoader" data-audio="ttsAudioPlayer">
+                <div class="form-group">
+                    <label for="ttsText">Text to Synthesize:</label>
+                    <textarea id="ttsText" name="text" rows="4" placeholder="Enter text here..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Select Voice Role:</label>
+                    <select id="role" name="role" required>
+                        <option value="中文女">中文女</option>
+                        <option value="中文男">中文男</option>
+                        <option value="日语男">日语男</option>
+                        <option value="粤语女">粤语女</option>
+                        <option value="英文女">英文女</option>
+                        <option value="英文男">英文男</option>
+                        <option value="韩语女">韩语女</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="speed">Speed (default is 1.0):</label>
+                    <input type="number" id="speed" name="speed" min="0.5" max="2.0" step="0.1" value="1.0">
+                </div>
+
+                <div class="form-group">
+                    <button type="submit">Synthesize</button>
+                    <div class="loader" id="ttsLoader"></div>
+                </div>
+            </form>
+
+            <div class="audio-container" id="ttsAudioContainer" style="display: none;">
+                <h3>Generated Audio:</h3>
+                <audio id="ttsAudioPlayer" controls></audio>
+            </div>
+        </div>
+
+        <!-- Section for Clone Equal Language API -->
+        <div class="api-section">
+            <h2>Clone Equal Language</h2>
+            <form id="cloneEqForm" data-api="clone_eq" data-loader="cloneEqLoader" data-audio="cloneEqAudioPlayer">
+                <div class="form-group">
+                    <label for="cloneEqText">Text to Synthesize:</label>
+                    <textarea id="cloneEqText" name="text" rows="4" placeholder="Enter text here..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="referenceAudioEq">Reference Audio:</label>
+                    <input type="file" id="referenceAudioEq" name="reference_audio" accept="audio/*" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="referenceText">Reference Text:</label>
+                    <textarea id="referenceText" name="reference_text" rows="2" placeholder="Enter reference text here..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit">Clone Equal Language</button>
+                    <div class="loader" id="cloneEqLoader"></div>
+                </div>
+            </form>
+
+            <div class="audio-container" id="cloneEqAudioContainer" style="display: none;">
+                <h3>Cloned Audio:</h3>
+                <audio id="cloneEqAudioPlayer" controls></audio>
+            </div>
+        </div>
+
+        <!-- Section for Clone Voice API -->
+        <div class="api-section">
+            <h2>Clone Voice</h2>
+            <form id="cloneForm" data-api="clone" data-loader="cloneLoader" data-audio="cloneAudioPlayer">
+                <div class="form-group">
+                    <label for="cloneText">Text to Synthesize:</label>
+                    <textarea id="cloneText" name="text" rows="4" placeholder="Enter text here..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="referenceAudio">Reference Audio:</label>
+                    <input type="file" id="referenceAudio" name="reference_audio" accept="audio/*" required>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit">Clone Voice</button>
+                    <div class="loader" id="cloneLoader"></div>
+                </div>
+            </form>
+
+            <div class="audio-container" id="cloneAudioContainer" style="display: none;">
+                <h3>Cloned Audio:</h3>
+                <audio id="cloneAudioPlayer" controls></audio>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const loaderId = form.dataset.loader;
+            const audioPlayerId = form.dataset.audio;
+            const apiEndpoint = form.dataset.api;
+
+            showLoader(loaderId);
+
+            const formData = new FormData(form);
+            const fileInput = form.querySelector('input[type="file"]');
+            if (fileInput && fileInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = async function (e) {
+                    formData.set('reference_audio', btoa(e.target.result));
+                    formData.set('encode', 'base64');
+                    await submitForm(apiEndpoint, formData, loaderId, audioPlayerId);
+                };
+                reader.readAsBinaryString(fileInput.files[0]);
+            } else {
+                await submitForm(apiEndpoint, formData, loaderId, audioPlayerId);
+            }
+        }
+
+        async function submitForm(apiEndpoint, formData, loaderId, audioPlayerId) {
+            try {
+                const response = await fetch(`http://127.0.0.1:9233/${apiEndpoint}`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.msg || 'Unknown error');
+                }
+
+                const audioBlob = await response.blob();
+                document.getElementById(audioPlayerId).src = URL.createObjectURL(audioBlob);
+                document.getElementById(audioPlayerId).parentElement.style.display = 'block';
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+                console.error(error);
+            } finally {
+                hideLoader(loaderId);
+            }
+        }
+
+        function showLoader(loaderId) {
+            document.getElementById(loaderId).style.display = 'block';
+        }
+
+        function hideLoader(loaderId) {
+            document.getElementById(loaderId).style.display = 'none';
+        }
+
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', handleFormSubmit);
+        });
+    </script>
+</body>
+</html>
